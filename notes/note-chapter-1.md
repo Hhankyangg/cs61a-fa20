@@ -1,11 +1,13 @@
-# Chapter 1
+#  Chapter 1
 
-## Expressions
+## Ch.1.2 Elements of Programming
+
+### Expressions
 
 - Expressions
 - Call Expressions
 
-## Name
+### Name
 
 Name -- *bind* -- object
 
@@ -13,13 +15,13 @@ The name of a function is repeated twice, once in the frame and again as part of
 
 There is a difference between the two: different names may refer to the same function, but that function itself has only one intrinsic name.
 
-## Environment
+### Environment
 
 The possibility of binding names to values and later retrieving those values by name means that the interpreter must maintain some sort of memory that keeps track of the names, values, and bindings. This memory is called an *environment*.
 
 An environment in which an expression is evaluated consists of a sequence of *frames*.
 
- Each frame contains *bindings*, each of which associates a name with its corresponding value.
+Each frame contains *bindings*, each of which associates a name with its corresponding value.
 
 There is a single *global* frame. 
 
@@ -27,13 +29,13 @@ There is a single *global* frame.
 
 Assignment and import statements add entries to the first frame of the current environment. 
 
-## Evaluating Nested Expressions
+### Evaluating Nested Expressions
 
 *expression tree*: 
 
 ![expression_tree](./expression_tree.png)
 
-## The Non-Pure Print Function
+### The Non-Pure Print Function
 
 In addition to returning a value, applying a non-pure function can generate *side effects*, which make some change to the state of the interpreter or computer. A common side effect is to generate additional output beyond the return value, using the `print` function.
 
@@ -44,7 +46,17 @@ In addition to returning a value, applying a non-pure function can generate *sid
 None None
 ````
 
-## Calling User-Defined Functions
+#### None
+
+`None` represents nothing in Python
+
+A function that does not explicitly return a value will return `None`
+
+`None` is not displayed by the interpreter as the value of an expression
+
+## Ch.1.3 Defining New Functions
+
+### Calling User-Defined Functions
 
 To evaluate a call expression whose operator names a user-defined function, the Python interpreter follows a computational process. As with any call expression, the interpreter evaluates the operator and operand expressions, and then applies the named function to the resulting arguments.
 
@@ -57,7 +69,24 @@ The environment in which the body is evaluated consists of two frames: first the
 
 ![local-names-in-func](./local-names-in-func.png)
 
-## Functions as Abstractions
+### Looking Up Names In Environments
+
+Every expression is evaluated in the context of an environment.
+
+So far, the current environment is either:
+
+- The global frame alone, or
+- A local frame, *followed by* the global frame
+
+**MOST IMPORTANT THINGS:**
+
+An environment is a sequence of frames.
+
+*A name evaluates to the value bound to that name in the earliest frame of the current environment in which that name is found.*
+
+![multiple-environments](./multiple-environments.png)
+
+### Functions as Abstractions
 
 **Aspects of a functional abstraction.** To master the use of a functional abstraction, it is often useful to consider its three core attributes. The *domain* of a function is the set of arguments it can take. The *range* of a function is the set of values it can return. The *intent* of a function is the relationship it computes between inputs and output (as well as any side effects it might generate). Understanding functional abstractions via their domain, range, and intent is critical to using them correctly in a complex program.
 
@@ -66,3 +95,273 @@ For example, any `square` function that we use to implement `sum_squares` should
 - The *domain* is any single real number.
 - The *range* is any non-negative real number.
 - The *intent* is that the output is the square of the input.
+
+## Ch.1.4 Designing Functions
+
+**Remember, code is written only once, but often read many times.**
+
+### Documentation
+
+A function definition will often include documentation describing the function, called a *docstring*, which must be indented along with the function body. Docstrings are conventionally triple quoted. The first line describes the job of the function in one line. The following lines can describe arguments and clarify the behavior of the function.
+
+Comments in Python can be attached to the end of a line following the `#` symbol.
+
+### Default Argument Values
+
+In Python, we can provide default values for the arguments of a function. When calling that function, arguments with default values are optional. If they are not provided, then the default value is bound to the formal parameter name instead. 
+
+As a guideline, most data values used in a function's body should be expressed as default values to named arguments, so that they are easy to inspect and can be changed by the function caller. Some values that never change, such as the fundamental constant `k`, can be bound in the function body or in the global frame.
+
+````python
+def pressure(v, t, n=6.022e23):
+	"""Compute the pressure in pascals of an ideal gas.
+
+    v -- volume of gas, in cubic meters
+    t -- absolute temperature in degrees kelvin
+    n -- particles of gas (default: one mole)
+    """
+    k = 1.38e-23  # Boltzmann's constant
+    return n * k * t / v
+>>> pressure(1, 273.15)
+2269.974834
+>>> pressure(1, 273.15, 3 * 6.022e23)
+6809.924502
+````
+
+## Ch.1.5 Control
+
+### Statements
+
+At its highest level, the Python interpreter's job is to execute programs, composed of statements. However, much of the interesting work of computation comes from evaluating expressions. Statements govern the relationship among different expressions in a program and what happens to their results.
+
+### Compound Statements
+
+- A simple statement is a single line that doesn't end in a colon. 
+- A compound statement is so called because it is composed of other statements (simple and compound). 
+
+Together, a header and an indented suite of statements is called a clause. A compound statement consists of one or more clauses:
+
+```python
+<header>:
+    <statement>
+    <statement>
+    ...
+<separating header>:
+    <statement>
+    <statement>
+    ...
+```
+
+We can now know that, 
+
+- Expressions, return statements, and assignment statements are simple statements.
+- A `def` statement is a compound statement. The suite that follows the `def` header defines the function body.
+
+**We say that the header controls its suite.**
+
+### Defining Functions II: Local Assignment
+
+The effect of an assignment statement is to bind a name to a value in the *first* frame of the current environment. As a consequence, assignment statements within a function body cannot affect the global frame.
+
+### Conditional Statements
+
+A conditional statement in Python consists of a series of headers and suites: a required `if` clause, an optional sequence of `elif` clauses, and finally an optional `else` clause
+
+There is *short-circuiting* in Python when executing logical expressions
+
+Functions that perform comparisons and return boolean values typically begin with `is`, not followed by an underscore (e.g., `isfinite`, `isdigit`, `isinstance`, etc.).
+
+- `not` has the highest priority
+- `and`
+- `or` has the lowest priority
+
+### Iteration
+
+A `while` clause contains a header expression followed by a suite:
+
+```python
+while <expression>:
+    <suite>
+```
+
+A `while` statement that does not terminate is called an infinite loop. Press `<Control>-C` to force Python to stop looping.
+
+### Testing
+
+#### Assertions
+
+Programmers use `assert` statements to verify expectations, such as the output of a function being tested. An `assert` statement has an expression in a boolean context, followed by a quoted line of text (single or double quotes are both fine, but be consistent) that will be displayed if the expression evaluates to a false value.
+
+```python
+>>> assert fib(8) == 13, 'The 8th Fibonacci number should be 13'
+```
+
+When the expression being asserted evaluates to a true value, executing an assert statement has no effect. When it is a false value, `assert` causes an error that halts execution.
+
+A test function for `fib` should test several arguments, including extreme values of `n`.
+
+```python
+>>> def fib_test():
+        assert fib(2) == 1, 'The 2nd Fibonacci number should be 1'
+        assert fib(3) == 1, 'The 3rd Fibonacci number should be 1'
+        assert fib(50) == 7778742049, 'Error at the 50th Fibonacci number'
+```
+
+When writing Python in files, rather than directly into the interpreter, tests are typically written in the same file or a neighboring file with the suffix `_test.py`.
+
+#### Doctests
+
+Python provides a convenient method for placing simple tests directly in the docstring of a function. The first line of a docstring should contain a one-line description of the function, followed by a blank line. A detailed description of arguments and behavior may follow. In addition, the docstring may include a sample interactive session that calls the function:
+
+```python
+>>> def sum_naturals(n):
+        """Return the sum of the first n natural numbers.
+
+        >>> sum_naturals(10)
+        55
+        >>> sum_naturals(100)
+        5050
+        """
+        total, k = 0, 1
+        while k <= n:
+            total, k = total + k, k + 1
+        return total
+```
+
+**Test all functions:** 
+
+the interaction can be verified via the [doctest module](http://docs.python.org/py3k/library/doctest.html).
+
+```python
+>>> from doctest import testmod
+>>> testmod()
+TestResults(failed=0, attempted=2)
+```
+
+**Test one function:**
+
+we use a `doctest` function called `run_docstring_examples`.
+
+Its first argument is the function to test. The second should always be the result of the expression `globals()`, a built-in function that returns the global environment. The third argument is `True` to indicate that we would like "verbose" output: a catalog of all tests run.
+
+```python
+>>> from doctest import run_docstring_examples
+>>> run_docstring_examples(sum_naturals, globals(), True)
+Finding tests in NoName
+Trying:
+    sum_naturals(10)
+Expecting:
+    55
+ok
+Trying:
+    sum_naturals(100)
+Expecting:
+    5050
+ok
+```
+
+When writing Python in files, all doctests in a file can be run by starting Python with the doctest command line option:
+
+```shell
+python3 -m doctest <python_source_file> 
+python3 -m doctest -v <python_source_file> 
+```
+
+The key to effective testing is to write (and run) tests immediately after implementing new functions. It is even good practice to write some tests before you implement, in order to have some example inputs and outputs in your mind. A test that applies a single function is called a *unit test*. Exhaustive unit testing is a hallmark of good program design.
+
+## Something About The Document: Debugging
+
+**Traceback Messages**
+
+````shell
+File "<file name>", line <number>, in <function>
+````
+
+**Error Messages**
+
+````shell
+<error type>: <error message>
+````
+
+### Debugging Techniques
+
+- **Running doctests**
+
+- **Using `print` statements**
+
+  - Long-term debugging
+
+    Sometimes we would like to leave the debugging code if we need to periodically test our file. It can get kind of annoying if every time we run our file, debugging messages pop up. One way to avoid this is to use a global `debug` variable:
+
+    ````python
+    debug = True
+    
+    def foo(n):
+    i = 0
+    while i < n:
+        i += func(i)
+        if debug:
+            print('DEBUG: i is', i)
+    ````
+
+- **Interactive Debugging**
+
+  One way a lot of programmers like to investigate their code is by use of an interactive REPL. That is, a terminal where you can directly run functions and inspect their outputs.
+
+  Typically, to accomplish this, you can run
+
+  ```shell
+  python -i file.py
+  ```
+
+  and one then has a session of python where all the definitions of `file.py` have already been executed.
+
+- **Python Tutor Debugging**
+
+  Sometimes the best way to understand what is going on with a given piece of python code is to create an environment diagram. While creating an environment diagram by hand can sometimes be tedious, the tool [Python Tutor](http://tutor.cs61a.org/) creates environment diagrams automatically.
+
+- **Using `assert` statements**
+
+  For example, if you are writing a function that takes in an integer and doubles it, it might be useful to ensure that your input is in fact an integer. You can then write the following code
+
+  ```python
+  def double(x):
+      assert isinstance(x, int), "The input to double(x) must be an integer"
+      return 2 * x
+  ```
+
+  Note that we aren't really debugging the `double` function here, what we're doing is ensuring that anyone who calls `double` is doing so with the right arguments. 
+
+  One *major* benefit of assert statements is that they are more than a debugging tool, you can leave them in code permanantly. A key principle in software development is that it is generally better for code to crash than produce an incorrect result, and having asserts in your code makes it far more likely that your code will crash if it has a bug in it.
+
+### Error Types
+
+- `SyntaxError`
+
+  This is different from other errors, which are only raised during runtime.
+
+- `IndentationError`
+
+- `TypeError`
+
+-  `NameError`
+
+  variable not assigned to anything OR it doesn't exist. This includes function names.
+
+-  `IndexError`
+
+### Lab01 quiz back-up
+
+````shell
+Q: What is the best way to open an interactive terminal to investigate a failing test for question sum_digits in assignment lab01?
+Choose the number of the correct choice:
+
+0) python3 ok -q sum_digits --trace
+1) python3 -i lab01.py
+2) python3 ok -q sum_digits -i
+3) python3 ok -q sum_digits
+   ? 2
+   -- OK! --
+````
+
+## Ch.1.6 Higher-Order Functions
