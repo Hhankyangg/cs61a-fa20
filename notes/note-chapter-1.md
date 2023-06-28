@@ -365,3 +365,230 @@ Choose the number of the correct choice:
 ````
 
 ## Ch.1.6 Higher-Order Functions
+
+*One of the things we should demand from a powerful programming language is the ability to build abstractions by assigning names to common patterns and then to work in terms of the names directly.*
+
+**Functions that manipulate functions are called higher-order functions.**
+
+### Functions as Arguments
+
+Using an `identity` function that returns its argument, we can sum natural numbers using exactly the same `summation` function.
+
+```python
+>>> def summation(n, term):
+        total, k = 0, 1
+        while k <= n:
+            total, k = total + term(k), k + 1
+        return total
+>>> def identity(x):
+        return x
+>>> def sum_naturals(n):
+        return summation(n, identity)
+>>> sum_naturals(10)
+55
+```
+
+### Functions as General Methods
+
+With higher-order functions, we begin to see a more powerful kind of abstraction: some functions express general methods of computation, independent of the particular functions they call.
+
+When a user-defined function is applied to some arguments, the formal parameters are bound to the values of those arguments (which may be functions) in a new local frame.
+
+Consider the following example, which implements a general method for iterative improvement and uses it to compute the [golden ratio](http://www.geom.uiuc.edu/~demo5337/s97b/art.htm). The golden ratio, often called "phi", is a number near 1.6 that appears frequently in nature, art, and architecture.
+
+An iterative improvement algorithm begins with a `guess` of a solution to an equation. It repeatedly applies an `update` function to improve that guess, and applies a `close` comparison to check whether the current `guess` is "close enough" to be considered correct.
+
+```python
+>>> def improve(update, close, guess=1):
+        while not close(guess):
+            guess = update(guess)
+        return guess
+```
+
+This `improve` function is a general expression of **repetitive refinement**. It doesn't specify what problem is being solved: those details are left to the `update` and `close` functions passed in as arguments.
+
+Among the well-known properties of the golden ratio are that it can be computed by repeatedly summing the inverse of any positive number with 1, and that it is one less than its square. We can express these properties as functions to be used with `improve`.
+
+```python
+>>> def golden_update(guess):
+        return 1/guess + 1
+>>> def square_close_to_successor(guess):
+        return approx_eq(guess * guess, guess + 1)
+```
+
+Above, we introduce a call to `approx_eq` that is meant to return `True` if its arguments are approximately equal to each other. To implement, `approx_eq`, we can compare the absolute value of the difference between two numbers to a small tolerance value.
+
+```python
+>>> def approx_eq(x, y, tolerance=1e-15):
+        return abs(x - y) < tolerance
+```
+
+Calling `improve` with the arguments `golden_update` and `square_close_to_successor` will compute a finite approximation to the golden ratio.
+
+```python
+>>> improve(golden_update, square_close_to_successor)
+1.6180339887498951
+```
+
+This example illustrates two related big ideas in computer science. 
+
+- First, naming and functions allow us to abstract away a vast amount of complexity. While each function definition has been trivial, the computational process set in motion by our evaluation procedure is quite intricate. 
+- Second, it is only by virtue of the fact that we have an extremely general evaluation procedure for the Python language that small components can be composed into complex processes. Understanding the procedure of interpreting programs allows us to validate and inspect the process we have created.
+
+### Defining Functions III: Nested Definitions
+
+Let's consider a new problem: computing the square root of a number. In programming languages, "square root" is often abbreviated as `sqrt`. Repeated application of the following update converges to the square root of `a`:
+
+```python
+>>> def average(x, y):
+        return (x + y)/2
+>>> def sqrt_update(x, a):
+        return average(x, a/x)
+```
+
+This two-argument update function is incompatible with `improve` (it takes two arguments, not one), and it provides only a single update, while we really care about taking square roots by repeated updates. The solution to both of these issues is to place function definitions inside the body of other definitions.
+
+```python
+>>> def sqrt(a):
+        def sqrt_update(x):
+            return average(x, a/x)
+        def sqrt_close(x):
+            return approx_eq(x * x, a)
+        return improve(sqrt_update, sqrt_close)
+```
+
+**Lexical scope:**
+
+Locally defined functions also have access to the name bindings in the scope in which they are defined. In this example, `sqrt_update` refers to the name `a`, which is a formal parameter of its enclosing function `sqrt`. This discipline of sharing names among nested definitions is called *lexical scoping*. Critically, the inner functions have access to the names in the environment where they are defined (not where they are called).
+
+We require two extensions to our environment model to enable lexical scoping.
+
+1. Each user-defined function has a parent environment: the environment in which it was defined.
+2. When a user-defined function is called, its local frame extends its parent environment.
+
+Previous to `sqrt`, all functions were defined in the global environment, and so they all had the same parent: the global environment. By contrast, when Python evaluates the first two clauses of `sqrt`, it create functions that are associated with a local environment.
+
+![Nested_Func](./Nested_Func.png)
+
+> Only after calling `sqrt(a)`, `sqrt_update` and `sqrt_close` will be defined
+
+Function values each have a new annotation that we will include in environment diagrams from now on, a *parent*. The parent of a function value is the first frame of the environment in which that function was defined. Functions without parent annotations were defined in the global environment. When a user-defined function is called, the frame created has the same parent as that function.
+
+![Nested_Func_2](./Nested_Func_2.png)
+
+> The most critical part of this evaluation procedure is the transfer of the parent for `sqrt_update`and `sqrt_close` to the frame created by calling `sqrt_update`. This frame is also annotated with `[parent=f1]`.
+
+**Extended Environments:**
+
+An environment can consist of an arbitrarily long chain of frames, which always concludes with the global frame. Previous to this `sqrt` example, environments had at most two frames: a local frame and the global frame. By calling functions that were defined within other functions, via nested `def` statements, we can create longer chains. The environment for this call to `sqrt_update` consists of three frames: the local `sqrt_update` frame, the `sqrt` frame in which `sqrt_update` was defined (labeled `f1`), and the global frame.
+
+The return expression in the body of `sqrt_update` can resolve a value for `a` by following this chain of frames. Looking up a name finds the first value bound to that name in the current environment. Python checks first in the `sqrt_update` frame -- no `a` exists. Python checks next in the parent frame, `f1`, and finds a binding for `a` to 256.
+
+Hence, we realize two key advantages of lexical scoping in Python.
+
+- The names of a local function do not interfere with names external to the function in which it is defined, because the local function name will be bound in the current local environment in which it was defined, rather than the global environment.
+- A local function can access the environment of the enclosing function, because the body of the local function is evaluated in an environment that extends the evaluation environment in which it was defined.
+
+The `sqrt_update` function carries with it some data: the value for `a` referenced in the environment in which it was defined. Because they "enclose" information in this way, locally defined functions are often called *closures*.
+
+### Functions as Returned Values
+
+Once many simple functions are defined, function *composition* is a natural method of combination to include in our programming language. That is, given two functions `f(x)` and `g(x)`, we might want to define `h(x) = f(g(x))`. We can define function composition using our existing tools:
+
+```python
+>>> def compose1(f, g):
+        def h(x):
+            return f(g(x))
+        return h
+```
+
+The 1 in `compose1` is meant to signify that the composed functions all take a single argument. This naming convention is not enforced by the interpreter; the 1 is just part of the function name.
+
+###  Example: Newton's Method
+
+Newton's method is an iterative improvement algorithm: it improves a guess of the zero for any function that is *differentiable*, which means that it can be approximated by a straight line at any point. Newton's method follows these linear approximations to find function zeros.
+
+Imagine a line through the point (*x*,*f*(*x*)) that has the same slope as the curve for function *f*(*x*) at that point. Such a line is called the *tangent*, and its slope is called the *derivative* of *f*(*x*) at *x*.
+
+Hence, translating *x* by *f*(*x*) divided by the slope will give the argument value at which this tangent line touches 0.
+
+A `newton_update` expresses the computational process of following this tangent line to 0, for a function `f` and its derivative `df`.
+
+后面看课本没看懂了，到时候再看 videos 吧
+
+**TODO**
+
+
+
+###  Currying
+
+We can use higher-order functions to convert a function that takes multiple arguments into a chain of functions that each take a single argument.More specifically, given a function `f(x, y)`, we can define a function `g` such that `g(x)(y)` is equivalent to `f(x, y)`. Here, `g` is a higher-order function that takes in a single argument `x` and returns another function that takes in a single argument `y`. This transformation is called *currying*.
+
+As an example, we can define a curried version of the `pow` function:
+
+```python
+>>> def curried_pow(x):
+        def h(y):
+            return pow(x, y)
+        return h
+>>> curried_pow(2)(3)
+8
+```
+
+we manually performed the currying transformation on the `pow` function to obtain `curried_pow`. Instead, we can define functions to automate currying, as well as the inverse *uncurrying* transformation:
+
+```python
+>>> def curry2(f):
+        """Return a curried version of the given two-argument function."""
+        def g(x):
+            def h(y):
+                return f(x, y)
+            return h
+        return g
+>>> def uncurry2(g):
+        """Return a two-argument version of the given curried function."""
+        def f(x, y):
+            return g(x)(y)
+        return f
+>>> pow_curried = curry2(pow)
+>>> pow_curried(2)(5)
+32
+>>> map_to_range(0, 10, pow_curried(2))
+1
+2
+4
+8
+16
+32
+64
+128
+256
+512
+```
+
+### Lambda Expressions
+
+We can understand the structure of a `lambda` expression by constructing a corresponding English sentence:
+
+```python
+     lambda            x            :          f(g(x))
+"A function that    takes x    and returns     f(g(x))"
+```
+
+![lambda](./lambda.png)
+
+In general, Python style prefers explicit `def` statements to lambda expressions, but allows them in cases where a simple function is needed as an argument or return value.
+
+### Abstractions and First-Class Functions
+
+The significance of higher-order functions is that they enable us to represent these abstractions explicitly as elements in our programming language, so that they can be handled just like other computational elements.
+
+In general, programming languages impose restrictions on the ways in which computational elements can be manipulated. Elements with the fewest restrictions are said to have first-class status. Some of the "rights and privileges" of first-class elements are:
+
+1. They may be bound to names.
+2. They may be passed as arguments to functions.
+3. They may be returned as the results of functions.
+4. They may be included in data structures.
+
+Python awards functions full first-class status, and the resulting gain in expressive power is enormous.
+
