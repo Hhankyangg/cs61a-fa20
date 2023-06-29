@@ -169,6 +169,22 @@ A conditional statement in Python consists of a series of headers and suites: a 
 
 There is *short-circuiting* in Python when executing logical expressions
 
+> To evaluating the expression `<left> and <right>`
+
+1. Evaluate the `<left>`
+2. If the result of `<left>` is false value `v`, the the whole expression evaluates to `v`
+3. Otherwise, the expression evaluates to the value of `<right>`
+
+````python
+def has_big_sqrt(x):
+    """To make sure the func won't crash due to a negative x, we use and in return expression
+    >>> has_big_root(1000)
+    True
+    >>> has_big_root(-1000)
+    False"""
+    return x > 0 and sqrt(x) > 10
+````
+
 Functions that perform comparisons and return boolean values typically begin with `is`, not followed by an underscore (e.g., `isfinite`, `isdigit`, `isinstance`, etc.).
 
 - `not` has the highest priority
@@ -504,25 +520,46 @@ Once many simple functions are defined, function *composition* is a natural meth
 
 The 1 in `compose1` is meant to signify that the composed functions all take a single argument. This naming convention is not enforced by the interpreter; the 1 is just part of the function name.
 
-###  Example: Newton's Method
+````python
+def make_adder(n):
+    """add k with n
 
-Newton's method is an iterative improvement algorithm: it improves a guess of the zero for any function that is *differentiable*, which means that it can be approximated by a straight line at any point. Newton's method follows these linear approximations to find function zeros.
+    >>> add_three = make_adder(3)
+    >>> add_three(4)
+    7
+    >>> make_adder(3)(4)
+    7
+    """
+    def adder(k):
+        return n + k
+    return adder
+````
 
-Imagine a line through the point (*x*,*f*(*x*)) that has the same slope as the curve for function *f*(*x*) at that point. Such a line is called the *tangent*, and its slope is called the *derivative* of *f*(*x*) at *x*.
+###  Example: User-Defined Sqrt Function
 
-Hence, translating *x* by *f*(*x*) divided by the slope will give the argument value at which this tangent line touches 0.
+````python
+square = lambda x: x*x
 
-A `newton_update` expresses the computational process of following this tangent line to 0, for a function `f` and its derivative `df`.
+def search(y):
+    """Search x until y(x) is true. x must be a positive int"""
+    x = 1
+    while True:
+        if y(x):
+            return x
+        x += 1
 
-后面看课本没看懂了，到时候再看 videos 吧
-
-**TODO**
-
-
+def inverse(f):
+    """return g(y) that g(f(x)) == x
+    >>> sqrt = inverse(square)
+    >>> sqrt(16)
+    4
+    """
+    return lambda y: search(lambda x: f(x) == y)
+````
 
 ###  Currying
 
-We can use higher-order functions to convert a function that takes multiple arguments into a chain of functions that each take a single argument.More specifically, given a function `f(x, y)`, we can define a function `g` such that `g(x)(y)` is equivalent to `f(x, y)`. Here, `g` is a higher-order function that takes in a single argument `x` and returns another function that takes in a single argument `y`. This transformation is called *currying*.
+We can use higher-order functions to convert a function that takes multiple arguments into a chain of functions that each take a single argument. More specifically, given a function `f(x, y)`, we can define a function `g` such that `g(x)(y)` is equivalent to `f(x, y)`. Here, `g` is a higher-order function that takes in a single argument `x` and returns another function that takes in a single argument `y`. This transformation is called *currying*.
 
 As an example, we can define a curried version of the `pow` function:
 
@@ -568,7 +605,7 @@ we manually performed the currying transformation on the `pow` function to obtai
 
 ### Lambda Expressions
 
-We can understand the structure of a `lambda` expression by constructing a corresponding English sentence:
+We can understand the structure of a `lambda` **expression** by constructing a corresponding English sentence:
 
 ```python
      lambda            x            :          f(g(x))
