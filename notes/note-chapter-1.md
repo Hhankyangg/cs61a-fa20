@@ -507,6 +507,8 @@ Hence, we realize two key advantages of lexical scoping in Python.
 
 The `sqrt_update` function carries with it some data: the value for `a` referenced in the environment in which it was defined. Because they "enclose" information in this way, locally defined functions are often called *closures*.
 
+![environment-nested](./environment-nested.png)
+
 ### Functions as Returned Values
 
 Once many simple functions are defined, function *composition* is a natural method of combination to include in our programming language. That is, given two functions `f(x)` and `g(x)`, we might want to define `h(x) = f(g(x))`. We can define function composition using our existing tools:
@@ -519,6 +521,18 @@ Once many simple functions are defined, function *composition* is a natural meth
 ```
 
 The 1 in `compose1` is meant to signify that the composed functions all take a single argument. This naming convention is not enforced by the interpreter; the 1 is just part of the function name.
+
+````python
+def print_all(x):
+    """
+    >>> a = print_all(1)(3)(5)
+    1
+    3
+    5
+    """
+    print(x)
+    return print_all
+````
 
 ````python
 def make_adder(n):
@@ -582,6 +596,7 @@ we manually performed the currying transformation on the `pow` function to obtai
                 return f(x, y)
             return h
         return g
+# curry2 = lambda f: lambda x: lambda y: f(x, y)
 >>> def uncurry2(g):
         """Return a two-argument version of the given curried function."""
         def f(x, y):
