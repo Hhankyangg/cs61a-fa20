@@ -22,7 +22,20 @@ def roll_dice(num_rolls, dice=six_sided):
     assert type(num_rolls) == int, 'num_rolls must be an integer.'
     assert num_rolls > 0, 'Must roll at least once.'
     # BEGIN PROBLEM 1
-    "*** YOUR CODE HERE ***"
+    sum = 0
+    i = 0
+    tmp = 0
+    flag = 0 # if there is a 1, flag will be 1
+    while i < num_rolls:
+        tmp = dice()
+        if tmp == 1:
+            flag = 1
+        else:
+            sum += tmp
+        i += 1
+    if flag:
+        sum = 1
+    return sum
     # END PROBLEM 1
 
 
@@ -36,7 +49,7 @@ def free_bacon(score):
 
     # Trim pi to only (score + 1) digit(s)
     # BEGIN PROBLEM 2
-    "*** YOUR CODE HERE ***"
+    pi = pi // pow(10, 100-score)
     # END PROBLEM 2
 
     return pi % 10 + 3
@@ -56,7 +69,12 @@ def take_turn(num_rolls, opponent_score, dice=six_sided):
     assert num_rolls <= 10, 'Cannot roll more than 10 dice.'
     assert opponent_score < 100, 'The game should be over.'
     # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
+    score_got = 0
+    if num_rolls: # if num_rolls is not 0
+        score_got = roll_dice(num_rolls, dice)
+    else:
+        score_got = free_bacon(opponent_score)
+    return score_got
     # END PROBLEM 3
 
 
@@ -78,7 +96,13 @@ def swine_align(player_score, opponent_score):
     False
     """
     # BEGIN PROBLEM 4a
-    "*** YOUR CODE HERE ***"
+    if player_score != 0 and opponent_score != 0:
+        while opponent_score:
+            player_score, opponent_score = opponent_score, player_score % opponent_score
+        gcd = player_score
+        if gcd >= 10:
+            return True
+    return False
     # END PROBLEM 4a
 
 
@@ -100,7 +124,9 @@ def pig_pass(player_score, opponent_score):
     False
     """
     # BEGIN PROBLEM 4b
-    "*** YOUR CODE HERE ***"
+    if player_score < opponent_score and opponent_score - player_score < 3:
+        return True
+    return False
     # END PROBLEM 4b
 
 
@@ -119,6 +145,14 @@ def silence(score0, score1):
     """Announce nothing (see Phase 2)."""
     return silence
 
+def add_score(score0, score1, strategy0, strategy1, who, dice):
+    num_rolls = 0
+    if who == 0:
+        num_rolls = strategy0(score0, score1)
+        return take_turn(num_rolls, score1, dice)
+    else:
+        num_rolls = strategy1(score1, score0)
+        return take_turn(num_rolls, score0, dice)
 
 def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
          goal=GOAL_SCORE, say=silence):
@@ -139,7 +173,17 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
     """
     who = 0  # Who is about to take a turn, 0 (first) or 1 (second)
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    while score0 < goal and score1 < goal:
+        add = add_score(score0, score1, strategy0, strategy1, who, dice)
+        if who == 0:
+            score0 += add
+            if extra_turn(score0, score1):
+                who = other(who)
+        else:
+            score1 += add
+            if extra_turn(score1, score0):
+                who = other(who)
+        who = other(who)
     # END PROBLEM 5
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
