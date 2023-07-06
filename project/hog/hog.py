@@ -183,11 +183,11 @@ def play(strategy0, strategy1, score0=0, score1=0, dice=six_sided,
             score1 += add
             if extra_turn(score1, score0):
                 who = other(who)
+        say = say(score0, score1)
         who = other(who)
     # END PROBLEM 5
     # (note that the indentation for the problem 6 prompt (***YOUR CODE HERE***) might be misleading)
     # BEGIN PROBLEM 6
-    "*** YOUR CODE HERE ***"
     # END PROBLEM 6
     return score0, score1
 
@@ -271,7 +271,22 @@ def announce_highest(who, last_score=0, running_high=0):
     """
     assert who == 0 or who == 1, 'The who argument should indicate a player.'
     # BEGIN PROBLEM 7
-    "*** YOUR CODE HERE ***"
+    def two_scores(score0, score1):
+        if who == 0:
+            delta = score0 - last_score
+            if delta > running_high:
+                print(delta,"point(s)! The most yet for Player 0")
+                return announce_highest(who, score0, delta)
+            else:
+                return announce_highest(who, score0, running_high)
+        else:
+            delta = score1 - last_score
+            if delta > running_high:
+                print(delta,"point(s)! The most yet for Player 1")
+                return announce_highest(who, score1, delta)
+            else:
+                return announce_highest(who, score1, running_high)
+    return two_scores
     # END PROBLEM 7
 
 
@@ -311,7 +326,15 @@ def make_averaged(original_function, trials_count=1000):
     3.0
     """
     # BEGIN PROBLEM 8
-    "*** YOUR CODE HERE ***"
+    def f_n_times(*args):
+        total = 0
+        i = 0
+        while i < trials_count:
+            total += original_function(*args)
+            i += 1
+        avg = total / trials_count
+        return avg
+    return f_n_times
     # END PROBLEM 8
 
 
@@ -325,7 +348,17 @@ def max_scoring_num_rolls(dice=six_sided, trials_count=1000):
     1
     """
     # BEGIN PROBLEM 9
-    "*** YOUR CODE HERE ***"
+    avg_score = 0
+    max_score = 0
+    max_score_times = 1
+    i = 1
+    while i <= 10:
+        avg_score = make_averaged(roll_dice, trials_count)(i, dice)
+        if avg_score > max_score:
+            max_score = avg_score
+            max_score_times = i
+        i += 1
+    return max_score_times
     # END PROBLEM 9
 
 
@@ -340,7 +373,7 @@ def winner(strategy0, strategy1):
 
 def average_win_rate(strategy, baseline=always_roll(6)):
     """Return the average win rate of STRATEGY against BASELINE. Averages the
-    winrate when starting the game as player 0 and as player 1.
+    win rate when starting the game as player 0 and as player 1.
     """
     win_rate_as_player_0 = 1 - make_averaged(winner)(strategy, baseline)
     win_rate_as_player_1 = make_averaged(winner)(baseline, strategy)
@@ -375,7 +408,10 @@ def bacon_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     rolls NUM_ROLLS otherwise.
     """
     # BEGIN PROBLEM 10
-    return 6  # Replace this statement
+    if free_bacon(opponent_score) >= cutoff:
+        return 0
+    else:
+        return num_rolls
     # END PROBLEM 10
 
 
@@ -385,7 +421,13 @@ def extra_turn_strategy(score, opponent_score, cutoff=8, num_rolls=6):
     Otherwise, it rolls NUM_ROLLS.
     """
     # BEGIN PROBLEM 11
-    return 6  # Replace this statement
+    next_score = free_bacon(opponent_score) + score
+    if bacon_strategy(score, opponent_score, cutoff, num_rolls) == 0:
+        return 0
+    elif extra_turn(next_score, opponent_score):
+        return 0
+    else:
+        return num_rolls
     # END PROBLEM 11
 
 
