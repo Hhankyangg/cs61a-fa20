@@ -25,7 +25,7 @@ Each frame contains *bindings*, each of which associates a name with its corresp
 
 There is a single *global* frame. 
 
-![environment-frame-1](./environment-frame-1.png)
+![environment_frame_1](./environment_frame_1.png)
 
 Assignment and import statements add entries to the first frame of the current environment. 
 
@@ -644,7 +644,50 @@ In general, programming languages impose restrictions on the ways in which compu
 
 Python awards functions full first-class status, and the resulting gain in expressive power is enormous.
 
-## Function Example
+### Function Decorators
+
+````python
+def trace(fn):
+    def wrapped(x):
+        print('-> ', fn, '(', x, ')')
+        return fn(x)
+    return wrapped
+
+@trace
+def square(x):
+    return x * x
+
+@trace
+def sum_squares_up_to(n):
+    k = 1
+    total = 0
+    while k <= n:
+        total += square(k)
+        k += 1
+    return total
+
+print(sum_squares_up_to(5))
+
+# 运行结果
+->  <function sum_squares_up_to at 0x0000023E418D9CF0> ( 5 )
+->  <function square at 0x0000023E418D9EA0> ( 1 )
+->  <function square at 0x0000023E418D9EA0> ( 2 )
+->  <function square at 0x0000023E418D9EA0> ( 3 )
+->  <function square at 0x0000023E418D9EA0> ( 4 )
+->  <function square at 0x0000023E418D9EA0> ( 5 )
+55
+````
+
+The `def` statement for `triple` has an annotation, `@trace`, which affects the execution rule for `def`. As usual, the function `triple` is created. However, the name `triple` is not bound to this function. Instead, the name `triple` is bound to the returned function value of calling `trace` on the newly defined `triple` function. In code, this decorator is equivalent to:
+
+```python
+square = trace(square)
+sum_squares_up_to = trace(sum_squares_up_to)
+```
+
+In the projects associated with this text, decorators are used for tracing, as well as selecting which functions to call when a program is run from the command line.
+
+## Function Examples
 
 ### Sounds
 
@@ -741,4 +784,163 @@ Python awards functions full first-class status, and the resulting gain in expre
  
  play(both(mario_at(1), mario_at(1/2)))
  ````
+
+## Ch.1.7 Recursive Functions
+
+A simple recursive function:
+
+````python
+def sum_digits(n):
+    """Return the sum of the digits of positive integer n."""
+    if n < 10:
+        return n
+    else:
+        all_but_last, last = n // 10, n % 10
+    	return sum_digits(all_but_last) + last
+````
+
+###  The Anatomy of Recursive Functions
+
+Treating a recursive call as a functional abstraction has been called a *recursive leap of faith*. We define a function in terms of itself, but simply trust that the simpler cases will work correctly when verifying the correctness of the function.
+
+### Mutual Recursion
+
+When a recursive procedure is divided among two functions that call each other, the functions are said to be *mutually recursive*. As an example, consider the following definition of even and odd for non-negative integers:
+
+- a number is even if it is one more than an odd number
+- a number is odd if it is one more than an even number
+- 0 is even
+
+Using this definition, we can implement mutually recursive functions to determine whether a number is even or odd:
+
+````python
+def is_even(n):
+    if n == 0:
+        return True
+    else:
+        return is_odd(n-1)
+    
+def is_odd(n):
+    if n == 0:
+        return False
+    else:
+        return is_even(n-1)
+````
+
+Mutually recursive functions can be turned into a single recursive function by breaking the abstraction boundary between the two functions.
+
+````python
+def is_even(n):
+    if n == 0:
+        return True
+    else:
+        if (n-1) == 0:
+            return False
+        else:
+            return is_even((n-1)-1)
+````
+
+### Printing in Recursive Functions
+
+````python
+def cascade(n):
+    """Print a cascade of prefixes of n.
+    >>> cascade(1234)
+    1234
+    123
+    12
+    1
+    12
+    123
+    1234
+    """
+    if n < 10:
+        print(n)
+    else:
+        print(n)
+        cascade(n//10)
+        print(n)
+# this function can be expressed more compactly by observing that 
+# print(n) is repeated in both clauses of the conditional statement
+
+def cascade(n):
+    print(n)
+    if n >= 10:
+        cascade(n//10)
+        print(n)
+````
+
+Then consider a two-player game in which there are `n` initial pebbles on a table. The players take turns, removing either one or two pebbles from the table, and the player who removes the final pebble wins. Suppose that Alice and Bob play this game, each using a simple strategy:
+
+- Alice always removes a single pebble
+- Bob removes two pebbles if an even number of pebbles is on the table, and one otherwise
+
+Given `n` initial pebbles and Alice starting, who wins the game?
+
+A natural decomposition of this problem is to encapsulate each strategy in its own function. This allows us to modify one strategy without affecting the other, maintaining the abstraction barrier between the two. In order to incorporate the turn-by-turn nature of the game, **these two functions call each other at the end of each turn**.
+
+````python
+def play_alice(n):
+    if n == 0:
+        print("Bob wins!")
+    else:
+        play_bob(n-1)
+def play_bob(n):
+    if n == 0:
+        print("Alice wins!")
+    elif n % 2 == 0:
+        play_alice(n-2)
+    else:
+        play_alice(n-1)
+````
+
+###  Tree Recursion
+
+Another common pattern of computation is called tree recursion, in which a function calls itself more than once. As an example, consider computing the sequence of Fibonacci numbers, in which each number is the sum of the preceding two.
+
+````python
+def fib(n):
+    if n == 1:
+        return 0
+    if n == 2:
+        return 1
+    else:
+        return fib(n-2) + fib(n-1)
+````
+
+### Example: Partitions
+
+The number of partitions of a positive integer `n`, using parts up to size `m`, is the number of ways in which `n` can be expressed as the sum of positive integer parts up to `m` in increasing order.
+
+The number of ways to partition `n` using integers up to `m` equals
+
+1. the number of ways to partition `n-m` using integers up to `m`, and
+2. the number of ways to partition `n` using integers up to `m-1`.
+
+To see why this is true, observe that all the ways of partitioning `n` can be divided into two groups: those that include at least one `m` and those that do not. Moreover, each partition in the first group is a partition of `n-m`, followed by `m` added at the end. In the example above, the first two partitions contain 4, and the rest do not.
+
+Therefore, we can recursively reduce the problem of partitioning `n` using integers up to `m` into two simpler problems: (1) partition a smaller number `n-m`, and (2) partition with smaller components up to `m-1`.
+
+To complete the implementation, we need to specify the following base cases:
+
+1. There is one way to partition 0: include no parts.
+2. There are 0 ways to partition a negative `n`.
+3. There are 0 ways to partition any `n` greater than 0 using parts of size 0 or less.
+
+````python
+def count_partitions(n, m):
+    """Count the ways to partition n using parts up to m."""
+    if n == 0:
+        return 1
+    elif n < 0:
+        return 0
+    elif m == 0:
+        return 0
+    else:
+        return count_partitions(n-m, m) + count_partitions(n, m-1)
+````
+
+We can think of a tree-recursive function as exploring different possibilities. In this case, we explore the possibility that we use a part of size `m` and the possibility that we do not. The first and second recursive calls correspond to these possibilities.
+
+
 
