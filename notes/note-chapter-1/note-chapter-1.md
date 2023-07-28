@@ -870,6 +870,32 @@ def cascade(n):
         print(n)
 ````
 
+````python
+def inverse_cascade(n):
+    '''Print an inverse cascade.
+    >>> inverse_cascade(1234)
+    1
+    12
+    123
+    1234
+    123
+    12
+    1
+    '''
+    # use both high-order func and recursion
+    grow(n)
+    print(n)
+    shrink(n)
+
+def f_then_g(f, g, n):
+    if n:
+        f(n)
+        g(n)
+
+grow = lambda n: f_then_g(grow, print, n//10)
+shrink = lambda n: f_then_g(print, shrink, n//10)
+````
+
 Then consider a two-player game in which there are `n` initial pebbles on a table. The players take turns, removing either one or two pebbles from the table, and the player who removes the final pebble wins. Suppose that Alice and Bob play this game, each using a simple strategy:
 
 - Alice always removes a single pebble
