@@ -63,7 +63,15 @@ def pingpong(n):
     >>> check(HW_SOURCE_FILE, 'pingpong', ['Assign', 'AugAssign'])
     True
     """
-    
+    def helper(val, dir, i):
+        if i == n:
+            return val+dir
+        else:
+            if i % 8 == 0 or num_eights(i):
+                return helper(val+dir, -dir, i+1)
+            else:
+                return helper(val+dir, dir, i+1)
+    return helper(0, 1, 1)
 
 
 def missing_digits(n):
