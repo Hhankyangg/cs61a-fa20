@@ -101,7 +101,12 @@ def missing_digits(n):
     >>> check(HW_SOURCE_FILE, 'missing_digits', ['While', 'For'])
     True
     """
-    "*** YOUR CODE HERE ***"
+    if n //10 % 10 == 0:
+        return 0
+    elif n%10 == n//10%10:
+        return missing_digits(n // 10)
+    else:
+        return n%10 - n//10%10 - 1 + missing_digits(n // 10)
 
 
 def next_largest_coin(coin):
@@ -137,7 +142,35 @@ def count_coins(total):
     >>> check(HW_SOURCE_FILE, 'count_coins', ['While', 'For'])                                          
     True
     """
-    "*** YOUR CODE HERE ***"
+    def helper(n, max_cash, flag=0):
+        if n < 5:
+            return 1
+        elif n >= 5 and flag == 0:
+            if max_cash == 1:
+                return 1
+            elif max_cash == 5:
+                if n >= 5:
+                    return helper(n-5, 5) + helper(n-1, 1)
+            elif max_cash == 10:
+                if n >= 10:
+                    return helper(n-10, 10) + helper(n-5, 5) + helper(n-1, 1)
+                elif n >= 5:
+                    return helper(n-5, 5) + helper(n-1, 1)
+            elif max_cash == 25:
+                if n >= 25:
+                    return helper(n-25, 25) + helper(n-10, 10) + helper(n-5, 5) + helper(n-1, 1)
+                elif n >= 10:
+                    return helper(n-10, 10) + helper(n-5, 5) + helper(n-1, 1)
+                elif n >= 5:
+                    return helper(n-5, 5) + helper(n-1, 1)
+        elif n >= 5 and flag == 1:
+            if n >= 25:
+                return helper(n-25, 25) + helper(n-10, 10) + helper(n-5, 5) + helper(n-1, 1)
+            elif n >= 10:
+                return helper(n-10, 10) + helper(n-5, 5) + helper(n-1, 1)
+            elif n >= 5:
+                return helper(n-5, 5) + helper(n-1, 1)
+    return helper(total, 1, 1)
 
 
 from operator import sub, mul
@@ -152,5 +185,5 @@ def make_anonymous_factorial():
     >>> check(HW_SOURCE_FILE, 'make_anonymous_factorial', ['Assign', 'AugAssign', 'FunctionDef', 'Recursion'])
     True
     """
-    return 'YOUR_EXPRESSION_HERE'
+    return (lambda f: lambda k: f(f, k))(lambda f, k: k if k == 1 else mul(k, f(f, sub(k, 1))))
 
