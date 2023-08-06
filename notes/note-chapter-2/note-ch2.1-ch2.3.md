@@ -104,7 +104,7 @@ The following `for` statement with two names in its header will bind each name `
 
 #### Ranges
 
-A `range` is another built-in type of sequence in Python, which represents a range of integers. Ranges are created with `range`, which takes two integer arguments: the first number and one beyond the last number in the desired range.
+A `range` is **another built-in type of sequence** in Python, which represents a range of integers. Ranges are created with `range`, which takes two integer arguments: the first number and one beyond the last number in the desired range.
 
 ```python
 >>> range(1, 10)  # Includes 1, but not 10
