@@ -163,6 +163,18 @@ The general form of a list comprehension is:
 
 A third common pattern in sequence processing is to aggregate all values in a sequence into a single value. The built-in functions `sum`, `min`, and `max` are all examples of aggregation functions.
 
+**sum:** `sum(iterable[, start])`
+
+````python
+>>> sum([[1, 2], [3]], [])
+[1, 2, 3]
+>>> sum([1, 2, 3])
+6
+````
+**all:** `all(iterable) -> bool` 
+Return True if bool(x) is True for all values x in the iterable. 
+If the iterable is empty, return True.
+
 > By combining the patterns of evaluating an expression for each element, selecting a subset of elements, and aggregating elements, we can solve problems using a sequence processing approach.
 >
 > A perfect number is a positive integer that is equal to the sum of its divisors. The divisors of `n` are positive integers less than `n` that divide evenly into `n`. Listing the divisors of `n` can be expressed with a list comprehension.
@@ -230,6 +242,14 @@ Python has two operators `in` and `not in` that evaluate to `True` or `False` de
 A *slice* of a sequence is any contiguous span of the original sequence, designated by a pair of integers. As with the `range` constructor, the first integer indicates the starting index of the slice and the second indicates one beyond the ending index.
 
 In Python, sequence slicing is expressed similarly to element selection, using square brackets. A colon separates the starting and ending indices. Any bound that is omitted is assumed to be an extreme value: 0 for the starting index, and the length of the sequence for the ending index.
+
+**Python creates a new list with the elements from the starting index up to (but not including) the ending index.**
+
+````python
+>>> a = [1, 2, 3, 4, 5, 6]
+>>> b = a[3:1:-1]
+[4, 3]
+````
 
 ### Strings
 
