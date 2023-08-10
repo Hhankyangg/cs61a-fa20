@@ -441,6 +441,36 @@ Slicing can be used on the branches of a tree as well. For example, we may want 
 [1, [2, [3, [4, [5, [6, 7]]]]]]
 ```
 
+#### Two Types of Recursion
+
+````python
+def fact(n):		# type 1
+    if n == 0:
+        return 1
+    else:
+        return n * fact(n - 1)
+    
+def fact_k(n, k):	# type 2
+    """Return k * n * (n-1) * ... * 1"""
+    if n == 0:
+        return k
+    else:
+        return fact_k(n-1, n * k)
+````
+
+- Type 1 finishes all work after it reaches the base case.
+- Type 2 finishes all work when it reaches the base case.
+
+````python
+def sum_leaves(t, so_far):
+    so_far += label(t)
+    if is_leaf(t):
+        print(so_far)
+    else:
+        for b in branches(t):
+            sum_leaves(b, so_far)
+````
+
 ### Linked Lists
 
 So far, we have used only native types to represent sequences. However, we can also develop sequence representations that are not built into Python. A common representation of a sequence constructed from nested pairs is called a *linked list*. The environment diagram below illustrates the linked list representation of a four-element sequence containing 1, 2, 3, and 4.
