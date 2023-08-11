@@ -314,8 +314,6 @@ def add_trees(t1, t2):
         t2_children += [None for _ in range(len(t1_children) - len(t2_children))]
     return tree(new_label, [add_trees(x, y) for x, y in zip(t1_children, t2_children)])
         
-
-
 def build_successors_table(tokens):
     """Return a dictionary: keys are words; values are lists of successors.
 
