@@ -37,7 +37,14 @@ def about(topic):
     """
     assert all([lower(x) == x for x in topic]), 'topics should be lowercase.'
     # BEGIN PROBLEM 2
-    
+    def f_select(sentence):
+        sentence = remove_punctuation(sentence)
+        words = [lower(word) for word in split(sentence)]
+        for word in topic:
+            if word in words:
+                return True
+        return False
+    return f_select
     # END PROBLEM 2
 
 
@@ -61,7 +68,17 @@ def accuracy(typed, reference):
     typed_words = split(typed)
     reference_words = split(reference)
     # BEGIN PROBLEM 3
-    "*** YOUR CODE HERE ***"
+    percentage = 100.0
+    len_t, len_r = len(typed_words), len(reference_words)
+    if len_t == 0:
+        return 0.0
+    if len_t > len_r:
+        reference_words += [None for _ in range(len_t - len_r)]
+    for x, y in zip(typed_words, reference_words):
+        if x != y:
+            percentage -= 1 / len_t * 100
+    return percentage
+
     # END PROBLEM 3
 
 
