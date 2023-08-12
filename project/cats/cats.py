@@ -86,7 +86,7 @@ def wpm(typed, elapsed):
     """Return the words-per-minute (WPM) of the TYPED string."""
     assert elapsed > 0, 'Elapsed time must be positive'
     # BEGIN PROBLEM 4
-    "*** YOUR CODE HERE ***"
+    return len(typed) / 5 / (elapsed / 60)
     # END PROBLEM 4
 
 
@@ -95,8 +95,27 @@ def autocorrect(user_word, valid_words, diff_function, limit):
     from USER_WORD. Instead returns USER_WORD if that difference is greater
     than LIMIT.
     """
+
+    # If the user_word is contained inside the valid_words list, autocorrect returns that word.
+    # Otherwise, autocorrect returns the word from valid_words that has the lowest difference from the provided user_word based on the diff_function. 
+    # However, if the lowest difference between user_word and any of the valid_words is greater than limit, then user_word is returned instead.
+    
     # BEGIN PROBLEM 5
-    "*** YOUR CODE HERE ***"
+    min_diff = diff_function(user_word, valid_words[0], limit)
+    min_diff_word = valid_words[0]
+
+    if user_word in valid_words:
+        return user_word
+    else:
+        for word in valid_words:
+            diff = diff_function(user_word, word, limit)
+            if min_diff > diff:
+                min_diff = diff
+                min_diff_word = word
+        if min_diff <= limit:
+            return min_diff_word
+        else:
+            return user_word
     # END PROBLEM 5
 
 
@@ -106,7 +125,27 @@ def shifty_shifts(start, goal, limit):
     their lengths.
     """
     # BEGIN PROBLEM 6
-    assert False, 'Remove this line'
+    if start == '' and goal == '':
+        return 0
+    
+    if limit == 0 and ((start == '' and goal != '') or (start != '' and goal == '') or start[0] != goal[0]):
+        return 1
+    
+    if start == '' and goal != '':
+        return 1 + shifty_shifts('', goal[1:], limit-1)
+    elif start != '' and goal == '':
+        return 1 + shifty_shifts(start[1:], '', limit-1)       
+    elif len(start) == 1 and len(goal) == 1:
+        if start == goal:
+            return 0
+        else:
+            return 1
+    else:
+        if start[0] == goal[0]:
+            return shifty_shifts(start[1:], goal[1:], limit)
+        else:
+            return 1 + shifty_shifts(start[1:], goal[1:], limit-1)
+    
     # END PROBLEM 6
 
 
