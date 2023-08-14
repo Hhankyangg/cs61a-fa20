@@ -1,4 +1,4 @@
-# 1
+# Ch.2.2 & Optional Courses
 
 ## Ch.2.2
 
@@ -127,3 +127,12 @@ With this implementation, we can create and manipulate pairs.
 >>> select(p, 1)
 14
 ```
+
+## Optional Courses
+
+### Four Steps to Draw Your Own Circuit
+
+1. Draw a truth-table with all possible inputs & outputs
+2. Build sub-expressions for each output column only with and/not
+3. Combine, two at a time,sub-expression with an or
+4. Draw circuit diagram
