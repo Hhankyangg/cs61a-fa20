@@ -2,7 +2,7 @@
 
 ## Ch.4.2 Implicit Sequences
 
->  A sequence can be represented without each element being stored explicitly in the memory of the computer. That is, we can construct an object that provides access to all of the elements of some sequential dataset without computing the value of each element in advance. Instead, we compute elements on demand.
+> A sequence can be represented without each element being stored explicitly in the memory of the computer. That is, we can construct an object that provides access to all of the elements of some sequential dataset without computing the value of each element in advance. Instead, we compute elements on demand.
 
 ### 4.2.1  Iterators
 
@@ -144,3 +144,62 @@ for <name> in <expression>:
 To execute a `for` statement, Python evaluates the header `<expression>`, which must yield an iterable value. Then, the `__iter__` method is invoked on that value. Until a `StopIteration` exception is raised, Python repeatedly invokes the `__next__` method on that iterator and binds the result to the `<name>` in the `for` statement. Then, it executes the `<suite>`.
 
 ### 4.2.5  Generators and Yield Statements
+
+**什么情况下需要使用 yield？**
+
+> 一个函数 f，f 返回一个 list，这个 list 是动态计算出来的（不管是数学上的计算还是逻辑上的读取格式化），并且这个 list 会很大（无论是固定很大还是随着输入参数的增大而增大），这个时候，我们希望每次调用这个函数并使用迭代器进行循环的时候一个一个的得到每个 list 元素而不是直接得到一个完整的 list 来节省内存，这个时候 yield 就很有用。
+
+在 Python 中，使用了 **yield** 的函数被称为生成器（generator）。
+
+**yield** 是一个关键字，用于定义生成器函数，生成器函数是一种特殊的函数，可以在迭代过程中逐步产生值，而不是一次性返回所有结果。
+
+跟普通函数不同的是，生成器是一个返回迭代器的函数，只能用于迭代操作，更简单点理解生成器就是一个迭代器。
+
+当在生成器函数中使用 **yield** 语句时，函数的执行将会暂停，并将 **yield** 后面的表达式作为当前迭代的值返回。
+
+````python
+def countdown(n):
+    while n > 0:
+        yield n
+        n -= 1  
+        
+# 创建生成器对象 
+generator = countdown(5)  
+# 通过迭代生成器获取值 
+print(next(generator))  # 输出: 5 
+print(next(generator))  # 输出: 4 
+print(next(generator))  # 输出: 3  
+# 使用 for 循环迭代生成器 
+for value in generator:
+    print(value)  		# 输出: 2 1
+````
+
+The `yield from` statement yield all values from an iterator or iterable (since Python 3.3)
+
+````python
+>>> def a_then_b(a, b):
+    	for x in a:
+            yield x
+        for x in b:
+            yield x
+# 上下两个函数效果相同
+>>> def a_then_b(a, b):
+    	yield from a
+        yield from b
+>>> list(a_then_b([1, 2], [3, 4]))
+[1, 2, 3, 4]
+````
+
+````python
+>>> def countdown(n):
+    	yield n
+    	yield from countdown(n - 1)
+       # equel to :
+       #for x in countdown(n - 1):
+       #    yield x
+>>> list(countdown(5))
+[5, 4, 3, 2, 1]
+````
+
+
+
