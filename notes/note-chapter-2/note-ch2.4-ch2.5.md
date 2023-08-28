@@ -654,41 +654,9 @@ To evaluate a dot expression:
 
 In this evaluation procedure, instance attributes are found before class attributes, just as local names have priority over global in an environment. Methods defined within the class are combined with the object of the dot expression to form a bound method during the fourth step of this evaluation procedure. The procedure for looking up a name in a class has additional nuances that will arise shortly, once we introduce class inheritance.
 
-#### Attribute assignment 
+#### Attribute assignment
 
-All assignment statements that contain a dot expression on their left-hand side affect attributes for the object of that dot expression. If the object is an instance, then assignment sets an instance attribute. If the object is a class, then assignment sets a class attribute. As a consequence of this rule, assignment to an attribute of an object cannot affect the attributes of its class. The examples below illustrate this distinction.
-
-If we assign to the named attribute `interest` of an account instance, we create a new instance attribute that has the same name as the existing class attribute.
-
-```python
->>> kirk_account.interest = 0.08
-```
-
-and that attribute value will be returned from a dot expression.
-
-```python
->>> kirk_account.interest
-0.08
-```
-
-
-
-However, the class attribute `interest` still retains its original value, which is returned for all other accounts.
-
-```python
->>> spock_account.interest
-0.04
-```
-
-Changes to the class attribute `interest` will affect `spock_account`, but the instance attribute for `kirk_account` will be unaffected.
-
-```python
->>> Account.interest = 0.05  # changing the class attribute
->>> spock_account.interest     # changes instances without like-named instance attributes
-0.05
->>> kirk_account.interest     # but the existing instance attribute is unaffected
-0.08
-```
+![attr_assi](./attr_assi.png)
 
 ### 2.5.5  Inheritance
 
@@ -762,6 +730,38 @@ The expression `checking.deposit` evaluates to a bound method for making deposit
 2. Otherwise, look up the name in the base class, if there is one.
 
 The class of an object stays constant throughout. Even though the `deposit` method was found in the `Account` class, `deposit` is called with `self` bound to an instance of `CheckingAccount`, not of `Account`.
+
+```python
+class Bank:
+    """A bank has accounts and pays interest.
+
+    >>> bank = Bank()
+    >>> john = bank.open_account('John', 10)
+    >>> jack = bank.open_account('Jack', 5, CheckingAccount)
+    >>> jack.interest
+    0.01
+    >>> john.interest = 0.06
+    >>> bank.pay_interest()
+    >>> john.balance
+    10.6
+    >>> jack.balance
+    5.05
+    """
+    def __init__(self):
+        self.accounts = []
+
+    def open_account(self, holder, amount, account_type=Account):
+        """Open an account_type for holder and deposit amount."""
+        account = account_type(holder)
+        account.deposit(amount)
+        self.accounts.append(account)
+        return account
+
+    def pay_interest(self):
+        """Pay interest to all accounts."""
+        for account in self.accounts:
+            account.deposit(account.balance * account.interest)
+```
 
 #### Interfaces
 
@@ -849,5 +849,5 @@ There is no correct solution to the inheritance ordering problem, as there are c
 ['AsSeenOnTVAccount', 'CheckingAccount', 'SavingsAccount', 'Account', 'object']
 ```
 
-
+ 
 
