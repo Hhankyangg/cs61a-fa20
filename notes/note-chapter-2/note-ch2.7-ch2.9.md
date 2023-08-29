@@ -60,6 +60,47 @@ The `str` constructor is implemented in a similar manner: it invokes a method ca
 
 These polymorphic functions are examples of a more general principle: certain functions should apply to multiple data types. Moreover, one way to create such a function is to use a shared attribute name with a different definition in each class.
 
+```python
+# Below is how python implements repr() and str()
+######
+def repr(x):
+    return type(x).__repr__(x)
+
+def str(x):
+    t = type(x)
+    if hasattr(t, '__str__'):
+        return t.__str__(x)
+    else:
+        return repr(x)
+######
+
+class Bear:
+    def __init__(self):
+        self.__repr__ = lambda: 'oski'
+        self.__str__ = lambda: 'this bear'
+    
+    def __repr__(self):
+        return 'Bear()'
+    
+    def __str__(self):
+        return 'a bear'
+    
+oski = Bear()
+
+print(oski)
+print(str(oski))
+print(repr(oski))
+print(oski.__str__())
+print(oski.__repr__())
+
+# result
+a bear
+a bear   
+Bear()   
+this bear
+oski     
+```
+
 ### 2.7.2  Special Methods
 
 In Python, certain *special names* are invoked by the Python interpreter in special circumstances. For instance, the `__init__` method of a class is automatically invoked whenever an object is constructed. The `__str__` method is invoked automatically when printing, and `__repr__` is invoked in an interactive session to display values.
