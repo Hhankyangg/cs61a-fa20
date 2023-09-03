@@ -35,7 +35,37 @@ class VendingMachine:
     >>> w.vend()
     'Here is your soda.'
     """
-    "*** YOUR CODE HERE ***"
+    def __init__(self, product, price):
+        self.product = product
+        self.price = price
+        self.stock = 0
+        self.balance = 0
+    
+    def vend(self):
+        if self.stock == 0:
+            return 'Inventory empty. Restocking required.'
+        elif self.balance < self.price:
+            return 'You must add ${0} more funds.'.format(self.price - self.balance)
+        elif self.balance == self.price:
+            self.balance -= self.price
+            self.stock -= 1
+            return 'Here is your ' + self.product + '.'
+        else:
+            change = self.balance - self.price
+            self.balance = 0
+            self.stock -= 1
+            return 'Here is your {0} and ${1} change.'.format(self.product, change)
+        
+    def restock(self, amount):
+        self.stock += amount
+        return 'Current {0} stock: {1}'.format(self.product, self.stock)
+    
+    def add_funds(self, amount):
+        if self.stock == 0:
+            return 'Inventory empty. Restocking required. Here is your ${0}.'.format(amount)
+        else:
+            self.balance += amount
+            return 'Current balance: ${0}'.format(self.balance)
 
 
 class Mint:
@@ -73,17 +103,21 @@ class Mint:
         self.update()
 
     def create(self, kind):
-        "*** YOUR CODE HERE ***"
+        return kind(self.year)
 
     def update(self):
-        "*** YOUR CODE HERE ***"
+        self.year = Mint.current_year
 
 class Coin:
     def __init__(self, year):
         self.year = year
 
     def worth(self):
-        "*** YOUR CODE HERE ***"
+        time_pass = Mint.current_year - self.year
+        if time_pass > 50:
+            return self.cents + time_pass - 50
+        else:
+            return self.cents
 
 class Nickel(Coin):
     cents = 5
@@ -107,8 +141,12 @@ def store_digits(n):
     >>> cleaned = re.sub(r"#.*\\n", '', re.sub(r'"{3}[\s\S]*?"{3}', '', inspect.getsource(store_digits)))
     >>> print("Do not use str or reversed!") if any([r in cleaned for r in ["str", "reversed"]]) else None
     """
-    "*** YOUR CODE HERE ***"
+    result = Link.empty
 
+    while n > 0:
+        result = Link(n%10, result)
+        n //= 10
+    return result
 
 def is_bst(t):
     """Returns True if the Tree t has the structure of a valid BST.
@@ -135,8 +173,26 @@ def is_bst(t):
     >>> is_bst(t7)
     False
     """
-    "*** YOUR CODE HERE ***"
-
+    if t.is_leaf():
+        return True
+    elif len(t.branches) == 1:
+        return is_bst(t.branches[0])
+    elif  len(t.branches) == 2 and bst_max(t.branches[0]) <= t.label \
+          and bst_min(t.branches[1]) > t.label and all([is_bst(branch) for branch in t.branches]):
+        return True
+    return False
+                
+def bst_max(t):
+    if t.is_leaf():
+        return t.label
+    else:
+        return max([t.label] + [bst_max(b) for b in t.branches])
+    
+def bst_min(t):
+    if t.is_leaf():
+        return t.label
+    else:
+        return min([t.label] + [bst_min(b) for b in t.branches])
 
 def preorder(t):
     """Return a list of the entries in this tree in the order that they
@@ -148,7 +204,13 @@ def preorder(t):
     >>> preorder(Tree(2, [Tree(4, [Tree(6)])]))
     [2, 4, 6]
     """
-    "*** YOUR CODE HERE ***"
+    if t.is_leaf():
+        return [t.label]
+    else:
+        preorder_list = []
+        for b in t.branches:
+            preorder_list += preorder(b)
+        return [t.label] + preorder_list        
 
 
 def path_yielder(t, value):
@@ -185,13 +247,12 @@ def path_yielder(t, value):
     >>> sorted(list(path_to_2))
     [[0, 2], [0, 2, 1, 2]]
     """
-
-    "*** YOUR CODE HERE ***"
-
-    for _______________ in _________________:
-        for _______________ in _________________:
-
-            "*** YOUR CODE HERE ***"
+    if t.label == value:
+        yield [value]
+    for b in t.branches:
+        for path in path_yielder(b, value):
+            yield [t.label] + path
+            
 
 
 class Link:
